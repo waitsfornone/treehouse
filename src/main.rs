@@ -3,19 +3,40 @@ use std::io::stdin;
 #[derive(Debug)]
 struct Visitor {
     name: String,
-    greeting: String,
+    action: VisitorAction,
+    age: i8
+}
+
+#[derive(Debug)]
+enum VisitorAction {
+    Accept,
+    AcceptWithNote { note: String },
+    Refuse,
+    Probation,
 }
 
 impl Visitor {
-    fn new(name: &str, greeting: &str) -> Self {
+    fn new(name: &str, action: VisitorAction, age: i8) -> Self {
         Self {
             name: name.to_lowercase(),
-            greeting: greeting.to_string(),
+            action,
+            age
         }
     }
 
     fn greet_visitor(&self) {
-        println!("{}", self.greeting);
+        match &self.action {
+            VisitorAction::Accept => println!("Welcome to the tree house, {}", self.name),
+            VisitorAction::AcceptWithNote { note } => {
+                println!("Welcome to the treehouse, {}", self.name);
+                println!("{}", note);
+                if self.age < 21 {
+                    println!("Do not serve alcohol to {}", self.name);
+                }
+            }
+            VisitorAction::Probation => println!("{} is now a probationary member", self.name),
+            VisitorAction::Refuse => println!("Do not allow {} in!", self.name),
+        }
     }
 }
 
@@ -31,9 +52,11 @@ fn what_is_your_name() -> String {
 
 fn main() {
     let mut visitor_list = vec![
-        Visitor::new("Bert", "Hello Bert, enjoy your treehouse."),
-        Visitor::new("Steve", "Hi Steve. Your milk is in the fridge."),
-        Visitor::new("Fred", "Wow, who invited Fred?"),
+        Visitor::new("Bert", VisitorAction::Accept, 45),
+        Visitor::new("Steve", VisitorAction::AcceptWithNote{
+            note: String::from("Lactose-free milk is in the fridge")
+        }, 15),
+        Visitor::new("Fred", VisitorAction::Refuse, 30),
     ];
     loop {
         println!("Hello, what's your name? (Leave empty and press ENTER to quit) ");
@@ -49,7 +72,7 @@ fn main() {
                     break;
                 } else {
                     println!("{} is not on the visitor list.", name);
-                    visitor_list.push(Visitor::new(&name, "New friend"));
+                    visitor_list.push(Visitor::new(&name, VisitorAction::Probation, 0));
                 }
             }
         }
